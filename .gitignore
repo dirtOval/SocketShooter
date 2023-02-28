@@ -1,2 +1,11 @@
 #assets
 assetSource
+
+#node
+node_modules
+
+#dist
+dist
+
+#parcel
+.parcel-cache
