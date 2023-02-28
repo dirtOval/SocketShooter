@@ -1,2 +1,5 @@
 #assets
 assetSource
+
+#node
+node_modules
