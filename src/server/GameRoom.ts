@@ -2,10 +2,27 @@ import http from "http";
 import { Room, Client } from "colyseus";
 import { Player, GameRoomState } from './GameRoomState';
 
+//game constants
+const MOVE_SPEED = 6;
+
 export class GameRoom extends Room<GameRoomState> {
     // When room is initialized
     onCreate (options: any) {
         this.setState(new GameRoomState());
+
+        //player input
+        this.onMessage(0, (client, data) => {
+            const player = this.state.players.get(client.sessionId);
+
+            //movement
+            if (data.left) {
+                player.x -= MOVE_SPEED;
+                console.log('moving left!');
+            } else if (data.right) {
+                player.x += MOVE_SPEED;
+                console.log('moving right!');
+            }
+        })
     }
 
     // When client successfully join the room

@@ -3,11 +3,21 @@ import { Client, Room } from 'colyseus.js';
 import Player from '../entities/Player';
 
 export class GameScene extends Phaser.Scene {
+
+  inputPayload = {
+    left: false,
+    right: false
+  }
+
+  cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
+
   preload() {
     this.load.image('background', '../../../assets/background.png');
     this.load.image('floor', '../../../assets/floor.png');
     this.load.spritesheet('player', '../../../assets/hero_stand_run.png',
                           {frameWidth: 50, frameHeight: 50});
+
+    this.cursorKeys = this.input.keyboard.createCursorKeys();
   }
 
   client = new Client("ws://localhost:3000");
@@ -29,6 +39,10 @@ export class GameScene extends Phaser.Scene {
       const entity = new Player(this, player.x, player.y);
 
       this.playerEntities[sessionId] = entity;
+
+      player.listen("x", (newX) => {
+        entity.x = newX;
+      })
     }
 
     this.room.state.players.onRemove = (player, sessionId) => {
@@ -42,6 +56,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
-    // game loop
+
+    //if not connected yet, don't do any of this
+    if (!this.room) {
+      return;
+    }
+
+    this.inputPayload.left = this.cursorKeys.left.isDown;
+    this.inputPayload.right = this.cursorKeys.right.isDown;
+    this.room.send(0, this.inputPayload);
   }
 }
