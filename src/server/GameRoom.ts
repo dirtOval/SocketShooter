@@ -4,23 +4,56 @@ import { Player, GameRoomState } from './GameRoomState';
 
 //game constants
 const MOVE_SPEED = 6;
+const fixedTimeStep = 1000 / 60;
 
 export class GameRoom extends Room<GameRoomState> {
+
+
     // When room is initialized
     onCreate (options: any) {
         this.setState(new GameRoomState());
+
+        //fixed tick-rate stuff.
+        let elapsedTime = 0;
+
+        this.setSimulationInterval(deltaTime => {
+            elapsedTime += deltaTime;
+
+            while (elapsedTime >= fixedTimeStep) {
+              elapsedTime -= fixedTimeStep;
+              this.update(fixedTimeStep);
+            }
+        })
 
         //player input
         this.onMessage(0, (client, data) => {
             const player = this.state.players.get(client.sessionId);
 
-            //movement
-            if (data.left) {
-                player.x -= MOVE_SPEED;
-                console.log('moving left!');
-            } else if (data.right) {
-                player.x += MOVE_SPEED;
-                console.log('moving right!');
+            player.inputQueue.push(data);
+            // //movement
+            // if (data.left) {
+            //     player.x -= MOVE_SPEED;
+            // } else if (data.right) {
+            //     player.x += MOVE_SPEED;
+            // }
+        })
+
+        this.setSimulationInterval((deltaTime) => {
+            this.update(deltaTime);
+        })
+    }
+
+    update(deltaTime: number) {
+
+        this.state.players.forEach(player => {
+            let input: any;
+
+            while (input = player.inputQueue.shift()) {
+                if (input.left) {
+                    player.x -= MOVE_SPEED;
+                } else if (input.right) {
+                    player.x += MOVE_SPEED;
+                }
             }
         })
     }
