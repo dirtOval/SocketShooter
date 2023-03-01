@@ -5,6 +5,7 @@ import Player from '../entities/Player';
 const backgroundImage = require('../../assets/background.png');
 const floorImage = require('../../assets/floor.png');
 const playerSheet = require('../../assets/hero_stand_run.png');
+const platformImage = require('../../assets/platform.png')
 
 const MOVE_SPEED = 6;
 
@@ -26,6 +27,7 @@ export class GameScene extends Phaser.Scene {
   preload() {
     this.load.image('background', backgroundImage);
     this.load.image('floor', floorImage);
+    this.load.image('platform', platformImage);
     this.load.spritesheet('player', playerSheet,
                           {frameWidth: 50, frameHeight: 50, endFrame: 20});
 
@@ -46,6 +48,20 @@ export class GameScene extends Phaser.Scene {
     const background = this.add.image(0, 0, 'background').setOrigin(0);
 
     const floor = this.physics.add.staticSprite(0, 909, 'floor').setOrigin(0).refreshBody();
+
+    const platforms = this.physics.add.staticGroup();
+
+    platforms.create(370, 634, 'platform');
+    platforms.create(1174, 634, 'platform');
+    platforms.create(1972, 634, 'platform');
+    platforms.create(772, 390, 'platform');
+    platforms.create(1572, 390, 'platform');
+    platforms.create(370, 634, 'platform');
+    platforms.create(370, 634, 'platform');
+    platforms.create(772, 858, 'platform');
+    platforms.create(1572, 858, 'platform');
+
+
 
 
     //set world size
@@ -106,6 +122,7 @@ export class GameScene extends Phaser.Scene {
 
       //collision
       this.physics.add.collider(entity, floor);
+      this.physics.add.collider(entity, platforms);
 
       //if the player entity is the client player
       if (sessionId === this.room.sessionId) {
@@ -170,9 +187,9 @@ export class GameScene extends Phaser.Scene {
     let zKey = this.input.keyboard.addKey('z');
     zKey.on('down', e => {
       if (this.currentPlayer.body.touching.down) {
-        this.inputPayload.velocityY = -250;
+        this.inputPayload.velocityY = -400;
         this.inputPayload.jump = true;
-        this.currentPlayer.setVelocityY(-250);
+        this.currentPlayer.setVelocityY(-400);
       }
     })
 
