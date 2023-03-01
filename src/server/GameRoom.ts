@@ -1,9 +1,10 @@
 import http from "http";
 import { Room, Client } from "colyseus";
-import { Player, GameRoomState } from './GameRoomState';
+import { Player, Bullet, GameRoomState } from './GameRoomState';
 
 //game constants
 const MOVE_SPEED = 6;
+const BULLET_SPEED = 12;
 const fixedTimeStep = 1000 / 60;
 
 export class GameRoom extends Room<GameRoomState> {
@@ -48,6 +49,14 @@ export class GameRoom extends Room<GameRoomState> {
         this.state.players.forEach(player => {
             let input: any;
 
+            for (let bullet of player.bullets) {
+                if (bullet.direction === 'left') {
+                    bullet.x -= BULLET_SPEED;
+                } else {
+                    bullet.x += BULLET_SPEED;
+                }
+            }
+
             while (input = player.inputQueue.shift()) {
                 if (input.left) {
                     player.x -= MOVE_SPEED;
@@ -65,6 +74,19 @@ export class GameRoom extends Room<GameRoomState> {
 
                 if (input.velocityY) {
                     player.velocityY = input.velocityY;
+                }
+
+                if (input.fire) {
+                    const bullet = new Bullet();
+                    if (player.facing === 'left') {
+                        bullet.x = player.x - 5
+                        bullet.direction = 'left';
+                    } else {
+                        bullet.x = player.x + 5;
+                        bullet.direction = 'right';
+                    }
+                    bullet.y = player.y;
+                    player.bullets.push(bullet);
                 }
             }
         })

@@ -1,13 +1,16 @@
 import Phaser from 'phaser';
 import { Client, Room } from 'colyseus.js';
 import Player from '../entities/Player';
+import Bullet from '../entities/Bullet';
 
 const backgroundImage = require('../../assets/background.png');
 const floorImage = require('../../assets/floor.png');
+const bulletImage = require('../../assets/playerBullet.png');
 const playerSheet = require('../../assets/hero_stand_run.png');
 const platformImage = require('../../assets/platform.png')
 
 const MOVE_SPEED = 6;
+const BULLET_SPEED = 600;
 
 export class GameScene extends Phaser.Scene {
 
@@ -18,7 +21,8 @@ export class GameScene extends Phaser.Scene {
     left: false,
     right: false,
     jump: false,
-    velocityY: 0
+    velocityY: 0,
+    fire: false
   }
 
 
@@ -28,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image('background', backgroundImage);
     this.load.image('floor', floorImage);
     this.load.image('platform', platformImage);
+    this.load.image('bullet', bulletImage);
     this.load.spritesheet('player', playerSheet,
                           {frameWidth: 50, frameHeight: 50, endFrame: 20});
 
@@ -41,6 +46,7 @@ export class GameScene extends Phaser.Scene {
   room: Room;
 
   playerEntities: {[sessionId: string]: any} = {};
+  playerBullets: {[sessionId: string]: any} = {};
 
   async create() {
     console.log('Joining game!');
@@ -51,13 +57,13 @@ export class GameScene extends Phaser.Scene {
 
     const platforms = this.physics.add.staticGroup();
 
-    platforms.create(370, 634, 'platform');
-    platforms.create(1174, 634, 'platform');
-    platforms.create(1972, 634, 'platform');
-    platforms.create(772, 390, 'platform');
-    platforms.create(1572, 390, 'platform');
-    platforms.create(370, 634, 'platform');
-    platforms.create(370, 634, 'platform');
+    // platforms.create(370, 634, 'platform');
+    // platforms.create(1174, 634, 'platform');
+    // platforms.create(1972, 634, 'platform');
+    // platforms.create(772, 390, 'platform');
+    // platforms.create(1572, 390, 'platform');
+    // platforms.create(370, 634, 'platform');
+    // platforms.create(370, 634, 'platform');
     platforms.create(772, 858, 'platform');
     platforms.create(1572, 858, 'platform');
 
@@ -119,6 +125,7 @@ export class GameScene extends Phaser.Scene {
       const entity = new Player(this, player.x, player.y);
 
       this.playerEntities[sessionId] = entity;
+      this.playerBullets[sessionId] = [];
 
       //collision
       this.physics.add.collider(entity, floor);
@@ -153,6 +160,10 @@ export class GameScene extends Phaser.Scene {
         player.listen('velocityY', newVelocityY => {
           entity.setData('newVelocityY', newVelocityY);
         })
+
+        player.listen('bullets', bulletArray => {
+          entity.setData('bulletArray', bulletArray);
+        })
       }
 
       this.cameras.main.setBounds(0, 0, 2250, 1410);
@@ -169,6 +180,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       delete this.playerEntities[sessionId];
+      delete this.playerBullets[sessionId];
     }
   }
 
@@ -187,15 +199,26 @@ export class GameScene extends Phaser.Scene {
     let zKey = this.input.keyboard.addKey('z');
     zKey.on('down', e => {
       if (this.currentPlayer.body.touching.down) {
-        this.inputPayload.velocityY = -400;
+        this.inputPayload.velocityY = -300;
         this.inputPayload.jump = true;
-        this.currentPlayer.setVelocityY(-400);
+        this.currentPlayer.setVelocityY(-300);
       }
     })
 
     if (this.currentPlayer.body.touching.down) {
       this.inputPayload.jump = false;
     }
+
+    let xKey = this.input.keyboard.addKey('x');
+    xKey.on('down', e => {
+      this.inputPayload.fire = true;
+    })
+
+    xKey.on('up', e => {
+      this.inputPayload.fire = false;
+    })
+
+
 
     // if (this.currentPlayer.body.touching.down) {
     //   this.inputPayload.jump = false;
@@ -242,6 +265,18 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    if (this.inputPayload.fire) {
+      const bullet = new Bullet(this, this.currentPlayer.x, this.currentPlayer.y - 10);
+      if (this.currentPlayer.facing === 'left') {
+        bullet.x = this.currentPlayer.x - 35;
+        bullet.setVelocityX(-BULLET_SPEED);
+      } else {
+        bullet.x = this.currentPlayer.x + 35;
+        bullet.setVelocityX(BULLET_SPEED);
+      }
+      this.playerBullets[this.room.sessionId].push()
+    }
+
     //linear interpolation to smooth player movement
     for (let sessionId in this.playerEntities) {
 
@@ -251,7 +286,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       const entity = this.playerEntities[sessionId];
-      const { serverX, serverFacing, newVelocityY, serverJumping } = entity.data.values;
+      const { serverX, serverFacing, newVelocityY, serverJumping, bulletArray } = entity.data.values;
 
       entity.x = Phaser.Math.Linear(entity.x, serverX, 0.8);
       entity.setVelocityY(newVelocityY);
@@ -283,6 +318,22 @@ export class GameScene extends Phaser.Scene {
               break;
           }
         }
+
+        //time to handle bullets
+        if (this.playerBullets[sessionId].length < bulletArray.length) {
+          while (this.playerBullets[sessionId].length < bulletArray.length) {
+            const bullet = new Bullet(this, entity.x, entity.y - 10);
+            if (serverFacing === 'left') {
+              bullet.x = entity.x - 35;
+              bullet.setVelocityX(-BULLET_SPEED);
+            } else {
+              bullet.x = entity.x + 35;
+              bullet.setVelocityX(BULLET_SPEED);
+            }
+            this.playerBullets[sessionId].push(bullet)
+          }
+        }
+
 
     }
   }
