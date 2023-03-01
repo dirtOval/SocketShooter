@@ -16,7 +16,8 @@ export class GameScene extends Phaser.Scene {
   inputPayload = {
     left: false,
     right: false,
-    jump: false
+    jump: false,
+    velocityY: 0
   }
 
 
@@ -26,7 +27,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image('background', backgroundImage);
     this.load.image('floor', floorImage);
     this.load.spritesheet('player', playerSheet,
-                          {frameWidth: 50, frameHeight: 50, endFrame: 19});
+                          {frameWidth: 50, frameHeight: 50, endFrame: 20});
 
     this.cursorKeys = this.input.keyboard.createCursorKeys();
 
@@ -86,7 +87,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: 'jumpRight',
+      key: 'jumpLeft',
       frames: [ { key: 'player', frame: 19}],
       frameRate: 20
     });
@@ -120,12 +121,20 @@ export class GameScene extends Phaser.Scene {
           entity.setData('serverX', newX);
         })
 
-        // player.listen('y', (newY) => {
-        //   entity.setData('serverY', newY);
-        // })
+        player.listen('y', (newY) => {
+          entity.setData('serverY', newY);
+        })
 
         player.listen('facing', (serverFacing) => {
           entity.setData('serverFacing', serverFacing);
+        })
+
+        player.listen('jumping', (serverJumping => {
+          entity.setData('serverJumping', serverJumping);
+        }))
+
+        player.listen('velocityY', newVelocityY => {
+          entity.setData('newVelocityY', newVelocityY);
         })
       }
 
@@ -155,12 +164,21 @@ export class GameScene extends Phaser.Scene {
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
 
+    this.inputPayload.velocityY = this.currentPlayer.body.velocity.y
+
     //jump payload just on keydown
     let zKey = this.input.keyboard.addKey('z');
     zKey.on('down', e => {
+      if (this.currentPlayer.body.touching.down) {
+        this.inputPayload.velocityY = -250;
         this.inputPayload.jump = true;
         this.currentPlayer.setVelocityY(-250);
+      }
     })
+
+    if (this.currentPlayer.body.touching.down) {
+      this.inputPayload.jump = false;
+    }
 
     // if (this.currentPlayer.body.touching.down) {
     //   this.inputPayload.jump = false;
@@ -169,12 +187,33 @@ export class GameScene extends Phaser.Scene {
     this.room.send(0, this.inputPayload);
 
     //for client player update movement instantly
+    if (Math.abs(this.currentPlayer.body.velocity.y) > 0) {
+      switch(this.currentPlayer.facing) {
+        case 'left':
+          this.currentPlayer.anims.play('jumpLeft');
+          break;
+        case 'right':
+          this.currentPlayer.anims.play('jumpRight');
+          break;
+      }
+    }
+
     if (this.inputPayload.left) {
       this.currentPlayer.x -= MOVE_SPEED;
-      this.currentPlayer.anims.play('moveLeft', true);
+      if (Math.abs(this.currentPlayer.body.velocity.y) > 0) {
+        this.currentPlayer.anims.play('jumpLeft');
+      } else {
+        this.currentPlayer.anims.play('moveLeft', true);
+      }
+      this.currentPlayer.facing = 'left';
     } else if (this.inputPayload.right) {
       this.currentPlayer.x += MOVE_SPEED;
-      this.currentPlayer.anims.play('moveRight', true);
+      if (Math.abs(this.currentPlayer.body.velocity.y) > 0) {
+        this.currentPlayer.anims.play('jumpRight');
+      } else {
+        this.currentPlayer.anims.play('moveRight', true);
+      }
+      this.currentPlayer.facing = 'right';
     } else if (!this.inputPayload.right && !this.inputPayload.left) {
       switch(this.currentPlayer.facing) {
         case 'right':
@@ -195,29 +234,39 @@ export class GameScene extends Phaser.Scene {
       }
 
       const entity = this.playerEntities[sessionId];
-      const { serverX, serverFacing } = entity.data.values;
+      const { serverX, serverFacing, newVelocityY, serverJumping } = entity.data.values;
 
       entity.x = Phaser.Math.Linear(entity.x, serverX, 0.8);
-      if (Math.abs(serverX - entity.x) < 0.5) {
-        switch(serverFacing) {
-          case 'left':
-            entity.anims.play('standLeft');
-            break;
-          case 'right':
-            entity.anims.play('standRight');
-            break;
+      entity.setVelocityY(newVelocityY);
+
+        if (Math.abs(serverX - entity.x) < 0.5) {
+          switch(serverFacing) {
+            case 'left':
+              entity.anims.play('standLeft');
+              break;
+            case 'right':
+              entity.anims.play('standRight');
+              break;
+          }
+        } else {
+          switch(serverFacing) {
+            case 'left':
+              if (serverJumping) {
+                entity.anims.play('jumpLeft');
+              } else {
+                entity.anims.play('moveLeft', true);
+              }
+              break;
+            case 'right':
+              if (serverJumping) {
+                entity.anims.play('jumpRight');
+              } else {
+                entity.anims.play('moveRight', true);
+              }
+              break;
+          }
         }
-      } else {
-        switch(serverFacing) {
-          case 'left':
-            entity.anims.play('moveLeft', true);
-            break;
-          case 'right':
-            entity.anims.play('moveRight', true);
-            break;
-        }
-      }
-      // entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2);
+
     }
   }
 

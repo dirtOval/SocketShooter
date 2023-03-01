@@ -4,7 +4,8 @@ export class Player extends Schema {
   @type('number') x: number;
   @type('number') y: number;
   @type('string') facing: string;
-  @type('boolean') grounded: boolean;
+  @type('boolean') jumping: boolean;
+  @type('number') velocityY: number;
 
   //this is for queueing player inputs for processing on server tick
   inputQueue: any[] = [];

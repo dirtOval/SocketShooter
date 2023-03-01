@@ -56,6 +56,16 @@ export class GameRoom extends Room<GameRoomState> {
                     player.x += MOVE_SPEED;
                     player.facing = 'right';
                 }
+
+                if (input.jump) {
+                    player.jumping = true;
+                } else {
+                    player.jumping = false;
+                }
+
+                if (input.velocityY) {
+                    player.velocityY = input.velocityY;
+                }
             }
         })
     }
@@ -69,7 +79,8 @@ export class GameRoom extends Room<GameRoomState> {
         player.x = 1275;
         player.y = 865;
         player.facing = 'right';
-        player.grounded = false;
+        player.jumping = false;
+        player.velocityY = 0;
 
         //assigns player to state
         this.state.players.set(client.sessionId, player);
