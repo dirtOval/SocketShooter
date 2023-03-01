@@ -66,8 +66,8 @@ export class GameRoom extends Room<GameRoomState> {
 
         const player = new Player();
 
-        player.x = 400;
-        player.y = 300;
+        player.x = 1275;
+        player.y = 865;
         player.facing = 'right';
         player.grounded = false;
 

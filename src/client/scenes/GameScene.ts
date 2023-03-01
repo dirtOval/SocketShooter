@@ -15,8 +15,10 @@ export class GameScene extends Phaser.Scene {
 
   inputPayload = {
     left: false,
-    right: false
+    right: false,
+    jump: false
   }
+
 
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
 
@@ -25,9 +27,11 @@ export class GameScene extends Phaser.Scene {
     this.load.image('floor', floorImage);
     this.load.spritesheet('player', playerSheet,
                           {frameWidth: 50, frameHeight: 50, endFrame: 19});
-    console.log();
+
     this.cursorKeys = this.input.keyboard.createCursorKeys();
-    console.log(this.anims);
+
+
+
   }
 
   client = new Client("ws://localhost:3000");
@@ -38,7 +42,15 @@ export class GameScene extends Phaser.Scene {
   async create() {
     console.log('Joining game!');
 
-    this.add.image(400, 300, 'background');
+    const background = this.add.image(0, 0, 'background').setOrigin(0);
+
+    const floor = this.physics.add.staticSprite(0, 909, 'floor').setOrigin(0).refreshBody();
+
+
+    //set world size
+    this.physics.world.setBounds(0, 0, 2250, 1410);
+
+    // this.cameras.main.setViewport(0, 0, 800, 600);
 
     //player animations
     this.anims.create({
@@ -88,11 +100,16 @@ export class GameScene extends Phaser.Scene {
 
     this.room.state.players.onAdd = (player, sessionId) => {
       const entity = new Player(this, player.x, player.y);
+
       this.playerEntities[sessionId] = entity;
+
+      //collision
+      this.physics.add.collider(entity, floor);
 
       //if the player entity is the client player
       if (sessionId === this.room.sessionId) {
         this.currentPlayer = entity;
+        this.cameras.main.startFollow(entity);
 
         player.listen('facing', () => {
           this.currentPlayer.facing = player.facing;
@@ -111,6 +128,11 @@ export class GameScene extends Phaser.Scene {
           entity.setData('serverFacing', serverFacing);
         })
       }
+
+      this.cameras.main.setBounds(0, 0, 2250, 1410);
+      // this.cameras.main.setViewport(0, 0, 800, 600);
+      // this.cameras.main.setZoom(1.15);
+      // this.cameras.main.setSize(800, 600);
 
     }
 
@@ -132,6 +154,18 @@ export class GameScene extends Phaser.Scene {
 
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
+
+    //jump payload just on keydown
+    let zKey = this.input.keyboard.addKey('z');
+    zKey.on('down', e => {
+        this.inputPayload.jump = true;
+        this.currentPlayer.setVelocityY(-250);
+    })
+
+    // if (this.currentPlayer.body.touching.down) {
+    //   this.inputPayload.jump = false;
+    // }
+
     this.room.send(0, this.inputPayload);
 
     //for client player update movement instantly
