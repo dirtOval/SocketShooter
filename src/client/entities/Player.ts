@@ -14,6 +14,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
   facing = 'right';
   jumping = 'false';
+  canFire =  true;
 }
 
 export default Player

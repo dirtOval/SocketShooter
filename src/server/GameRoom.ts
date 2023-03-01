@@ -77,16 +77,21 @@ export class GameRoom extends Room<GameRoomState> {
                 }
 
                 if (input.fire) {
-                    const bullet = new Bullet();
-                    if (player.facing === 'left') {
-                        bullet.x = player.x - 5
-                        bullet.direction = 'left';
-                    } else {
-                        bullet.x = player.x + 5;
-                        bullet.direction = 'right';
+                    if (player.canFire) {
+                        const bullet = new Bullet();
+                        if (player.facing === 'left') {
+                            bullet.x = player.x - 5
+                            bullet.direction = 'left';
+                        } else {
+                            bullet.x = player.x + 5;
+                            bullet.direction = 'right';
+                        }
+                        bullet.y = player.y;
+                        player.bullets.push(bullet);
+                        player.canFire = false;
                     }
-                    bullet.y = player.y;
-                    player.bullets.push(bullet);
+                } else {
+                    player.canFire = true;
                 }
             }
         })

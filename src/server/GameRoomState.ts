@@ -12,6 +12,7 @@ export class Player extends Schema {
   @type('string') facing: string;
   @type('boolean') jumping: boolean;
   @type('number') velocityY: number;
+  @type('boolean') canFire: boolean;
   @type([ Bullet ]) bullets = new ArraySchema<Bullet>();
 
   //this is for queueing player inputs for processing on server tick
