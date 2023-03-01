@@ -2,6 +2,10 @@ import Phaser from 'phaser';
 import { Client, Room } from 'colyseus.js';
 import Player from '../entities/Player';
 
+const backgroundImage = require('../../assets/background.png');
+const floorImage = require('../../assets/floor.png');
+const playerSheet = require('../../assets/hero_stand_run.png');
+
 const MOVE_SPEED = 6;
 
 export class GameScene extends Phaser.Scene {
@@ -17,12 +21,13 @@ export class GameScene extends Phaser.Scene {
   cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
 
   preload() {
-    this.load.image('background', '../../../assets/background.png');
-    this.load.image('floor', '../../../assets/floor.png');
-    this.load.spritesheet('player', '../../../assets/hero_stand_run.png',
-                          {frameWidth: 50, frameHeight: 50});
-
+    this.load.image('background', backgroundImage);
+    this.load.image('floor', floorImage);
+    this.load.spritesheet('player', playerSheet,
+                          {frameWidth: 50, frameHeight: 50, endFrame: 19});
+    console.log();
     this.cursorKeys = this.input.keyboard.createCursorKeys();
+    console.log(this.anims);
   }
 
   client = new Client("ws://localhost:3000");
@@ -32,6 +37,47 @@ export class GameScene extends Phaser.Scene {
 
   async create() {
     console.log('Joining game!');
+
+    this.add.image(400, 300, 'background');
+
+    //player animations
+    this.anims.create({
+      key: 'standRight',
+      frames:[ { key: 'player', frame: 8 } ],
+      frameRate: 20
+    });
+
+    this.anims.create({
+      key: 'standLeft',
+      frames: [ { key: 'player', frame: 9 }],
+      frameRate: 20
+    });
+
+    this.anims.create({
+      key: 'moveRight',
+      frames: this.anims.generateFrameNumbers('player', { start: 0, end: 7}),
+      frameRate: 15,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'moveLeft',
+      frames: this.anims.generateFrameNumbers('player', { start: 10, end: 17 }),
+      frameRate: 15,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'jumpRight',
+      frames: [ { key: 'player', frame: 18 }],
+      frameRate: 20
+    });
+
+    this.anims.create({
+      key: 'jumpRight',
+      frames: [ { key: 'player', frame: 19}],
+      frameRate: 20
+    });
 
     try {
       this.room = await this.client.joinOrCreate('gameroom');
@@ -48,13 +94,8 @@ export class GameScene extends Phaser.Scene {
       if (sessionId === this.room.sessionId) {
         this.currentPlayer = entity;
 
-        //for debugging purposes
-        this.remoteRef = this.add.rectangle(0, 0, entity.width, entity.height);
-        this.remoteRef.setStrokeStyle(1, 0xff0000);
-
-        player.listen('x', () => {
-          this.remoteRef.x = player.x;
-          this.remoteRef.y = player.y;
+        player.listen('facing', () => {
+          this.currentPlayer.facing = player.facing;
         })
 
       } else { //for all the other players
@@ -85,10 +126,22 @@ export class GameScene extends Phaser.Scene {
     this.inputPayload.right = this.cursorKeys.right.isDown;
     this.room.send(0, this.inputPayload);
 
+    //for client player update movement instantly
     if (this.inputPayload.left) {
       this.currentPlayer.x -= MOVE_SPEED;
+      this.currentPlayer.anims.play('moveLeft', true);
     } else if (this.inputPayload.right) {
       this.currentPlayer.x += MOVE_SPEED;
+      this.currentPlayer.anims.play('moveRight', true);
+    } else if (!this.inputPayload.right && !this.inputPayload.left) {
+      switch(this.currentPlayer.facing) {
+        case 'right':
+          this.currentPlayer.anims.play('standRight');
+          break;
+        case 'left':
+          this.currentPlayer.anims.play('standLeft');
+          break;
+      }
     }
 
     //linear interpolation to smooth player movement

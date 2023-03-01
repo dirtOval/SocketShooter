@@ -1,8 +1,9 @@
 import { MapSchema, Schema, type } from '@colyseus/schema';
 
 export class Player extends Schema {
-  @type("number") x: number;
-  @type("number") y: number;
+  @type('number') x: number;
+  @type('number') y: number;
+  @type('string') facing: string;
 
   //this is for queueing player inputs for processing on server tick
   inputQueue: any[] = [];

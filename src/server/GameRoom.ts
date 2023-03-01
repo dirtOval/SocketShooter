@@ -51,8 +51,10 @@ export class GameRoom extends Room<GameRoomState> {
             while (input = player.inputQueue.shift()) {
                 if (input.left) {
                     player.x -= MOVE_SPEED;
+                    player.facing = 'left';
                 } else if (input.right) {
                     player.x += MOVE_SPEED;
+                    player.facing = 'right';
                 }
             }
         })
@@ -66,6 +68,7 @@ export class GameRoom extends Room<GameRoomState> {
 
         player.x = 400;
         player.y = 300;
+        player.facing = 'right';
 
         //assigns player to state
         this.state.players.set(client.sessionId, player);
