@@ -1,9 +1,10 @@
 import http from "http";
 import { Room, Client } from "colyseus";
-import { Player, GameRoomState } from './GameRoomState';
+import { Player, Bullet, GameRoomState } from './GameRoomState';
 
 //game constants
 const MOVE_SPEED = 6;
+const BULLET_SPEED = 12;
 const fixedTimeStep = 1000 / 60;
 
 export class GameRoom extends Room<GameRoomState> {
@@ -48,11 +49,49 @@ export class GameRoom extends Room<GameRoomState> {
         this.state.players.forEach(player => {
             let input: any;
 
+            for (let bullet of player.bullets) {
+                if (bullet.direction === 'left') {
+                    bullet.x -= BULLET_SPEED;
+                } else {
+                    bullet.x += BULLET_SPEED;
+                }
+            }
+
             while (input = player.inputQueue.shift()) {
                 if (input.left) {
                     player.x -= MOVE_SPEED;
+                    player.facing = 'left';
                 } else if (input.right) {
                     player.x += MOVE_SPEED;
+                    player.facing = 'right';
+                }
+
+                if (input.jump) {
+                    player.jumping = true;
+                } else {
+                    player.jumping = false;
+                }
+
+                if (input.velocityY) {
+                    player.velocityY = input.velocityY;
+                }
+
+                if (input.fire) {
+                    if (player.canFire) {
+                        const bullet = new Bullet();
+                        if (player.facing === 'left') {
+                            bullet.x = player.x - 5
+                            bullet.direction = 'left';
+                        } else {
+                            bullet.x = player.x + 5;
+                            bullet.direction = 'right';
+                        }
+                        bullet.y = player.y;
+                        player.bullets.push(bullet);
+                        player.canFire = false;
+                    }
+                } else {
+                    player.canFire = true;
                 }
             }
         })
@@ -64,8 +103,11 @@ export class GameRoom extends Room<GameRoomState> {
 
         const player = new Player();
 
-        player.x = 400;
-        player.y = 300;
+        player.x = 1275;
+        player.y = 865;
+        player.facing = 'right';
+        player.jumping = false;
+        player.velocityY = 0;
 
         //assigns player to state
         this.state.players.set(client.sessionId, player);

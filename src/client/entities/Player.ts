@@ -11,6 +11,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     this.setScale(1.5);
     this.setCollideWorldBounds(true);
   }
+
+  facing = 'right';
+  jumping = 'false';
+  canFire =  true;
 }
 
 export default Player
