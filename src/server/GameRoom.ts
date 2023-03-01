@@ -69,6 +69,7 @@ export class GameRoom extends Room<GameRoomState> {
         player.x = 400;
         player.y = 300;
         player.facing = 'right';
+        player.grounded = false;
 
         //assigns player to state
         this.state.players.set(client.sessionId, player);

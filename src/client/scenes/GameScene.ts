@@ -102,6 +102,14 @@ export class GameScene extends Phaser.Scene {
         player.listen("x", (newX) => {
           entity.setData('serverX', newX);
         })
+
+        // player.listen('y', (newY) => {
+        //   entity.setData('serverY', newY);
+        // })
+
+        player.listen('facing', (serverFacing) => {
+          entity.setData('serverFacing', serverFacing);
+        })
       }
 
     }
@@ -153,9 +161,29 @@ export class GameScene extends Phaser.Scene {
       }
 
       const entity = this.playerEntities[sessionId];
-      const { serverX } = entity.data.values;
+      const { serverX, serverFacing } = entity.data.values;
 
-      entity.x = Phaser.Math.Linear(entity.x, serverX, 0.4);
+      entity.x = Phaser.Math.Linear(entity.x, serverX, 0.8);
+      if (Math.abs(serverX - entity.x) < 0.5) {
+        switch(serverFacing) {
+          case 'left':
+            entity.anims.play('standLeft');
+            break;
+          case 'right':
+            entity.anims.play('standRight');
+            break;
+        }
+      } else {
+        switch(serverFacing) {
+          case 'left':
+            entity.anims.play('moveLeft', true);
+            break;
+          case 'right':
+            entity.anims.play('moveRight', true);
+            break;
+        }
+      }
+      // entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2);
     }
   }
 
