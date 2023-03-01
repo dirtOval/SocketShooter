@@ -1,9 +1,8 @@
 import Phaser from 'phaser';
 import { GameScene } from '../scenes/GameScene';
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-export const GameView = (props) => {
+export const GameView = ({activeRoomId}) => {
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: 800,
@@ -15,8 +14,12 @@ export const GameView = (props) => {
       }
     },
     pixelArt: true,
+    title: activeRoomId,
     scene: [ GameScene ],
   };
 
-  const game = new Phaser.Game(config);
+  React.useEffect(() => {
+    const game = new Phaser.Game(config);
+  }, [])
+
 }

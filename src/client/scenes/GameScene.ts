@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { Client, Room } from 'colyseus.js';
+import { Room } from 'colyseus.js';
 import Player from '../entities/Player';
 import Bullet from '../entities/Bullet';
+import {client} from '../utility/Client';
 
 const backgroundImage = require('../../assets/background.png');
 const floorImage = require('../../assets/floor.png');
@@ -39,13 +40,13 @@ export class GameScene extends Phaser.Scene {
     this.load.spritesheet('explosion', explosionSheet,
                           {frameWidth: 64, frameHeight: 64});
 
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
+    this.cursorKeys = this.input.keyboard.createCursorKeys()
 
-
+    console.log(this.sys.game)
 
   }
 
-  client = new Client("ws://localhost:3000");
+  // client = new Client("ws://localhost:3000");
   room: Room;
 
   playerEntities: {[sessionId: string]: any} = {};
@@ -125,7 +126,7 @@ export class GameScene extends Phaser.Scene {
     })
 
     try {
-      this.room = await this.client.joinOrCreate('gameroom');
+      this.room = await client.joinById(this.sys.game.config.gameTitle);
       console.log('Joined successfully! :)')
     } catch (err) {
       console.log(err);
