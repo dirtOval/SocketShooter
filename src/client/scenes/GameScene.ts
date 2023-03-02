@@ -215,10 +215,28 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  die() {
+    this.playerEntities[this.room.sessionId].canFire = false;
+    this.playerEntities[this.room.sessionId].dying = true;
+
+    const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
+    const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
+    this.add.text(screenCenterX, screenCenterY, 'You are Dead',
+    {font: '"Press Start 2P"', fontSize: '72px'}).setOrigin(0.5);
+    this.time.addEvent({ delay: 2000, callback: () => {
+      this.sys.game.destroy(true);
+    }})
+  }
+
   fixedTick(time: number, delta: number) {
     //if not connected yet, don't do any of this
     if (!this.room) {
       return;
+    }
+
+    if (this.playerEntities[this.room.sessionId].active === false &&
+        this.playerEntities[this.room.sessionId].dying === false) {
+      this.die();
     }
 
     // console.log(this.playerBullets);
@@ -261,7 +279,7 @@ export class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.playerEntities[player], bullet, (player, bullet) => {
           console.log('collided');
           bullet.destroy();
-          player.setActive(false);
+          player.setActive(false).setVisible(false);
           const explosion = this.physics.add.sprite(player.x, player.y, 'explosion');
           explosion.setScale(2);
           explosion.play('explosion');
@@ -391,7 +409,7 @@ export class GameScene extends Phaser.Scene {
               let collider = this.physics.add.collider(this.playerEntities[player], bullet, (entity, bullet) => {
                 console.log('collided');
                 bullet.destroy();
-                entity.setActive(false);
+                entity.setActive(false).setVisible(false);
                 const explosion = this.physics.add.sprite(entity.x, entity.y, 'explosion');
                 explosion.setScale(2);
                 explosion.play('explosion');
