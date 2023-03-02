@@ -3,12 +3,12 @@ import React from 'react';
 const ButtonPanel = ({setAppState}) => {
 
   return (
-    <>
-      <button onClick={() => {
+    <div className="button-panel">
+      <div onClick={() => {
         setAppState('playing');
-      }}>Create Match</button>
-      <button>High Scores</button>
-    </>
+      }}><p>Create Match</p></div>
+      <div><p>High Scores</p></div>
+    </div>
   )
 }
 

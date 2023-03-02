@@ -3,6 +3,7 @@ import {useEffect, useState} from 'react';
 import {GameView} from './Game';
 import MainMenu from './MainMenu';
 import {client} from '../utility/Client';
+import '../styles.css';
 
 const App = (props) => {
 
@@ -31,13 +32,13 @@ const App = (props) => {
 
 
   return (
-    <>
+    <div className="app">
     {appState === 'menu' && <MainMenu rooms={rooms}
                                       setAppState={setAppState}
                                       setActiveRoomId={setActiveRoomId}/>}
 
     {appState === 'playing' && <GameView activeRoomId={activeRoomId}/>}
-    </>
+    </div>
   )
 }
 

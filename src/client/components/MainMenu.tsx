@@ -5,13 +5,16 @@ import ButtonPanel from './ButtonPanel';
 const MainMenu = ({rooms, setAppState, setActiveRoomId}) => {
 
   return (
-    <>
-    <h1>SocketShooter</h1>
-      <MatchList rooms={rooms}
-                 setAppState={setAppState}
-                 setActiveRoomId={setActiveRoomId}/>
-      <ButtonPanel setAppState={setAppState}/>
-    </>
+    <div className="main">
+      <h1>SocketShooter</h1>
+      <p>Click on a match to join, or create a new one!</p>
+      <div className="menu">
+        <MatchList rooms={rooms}
+                  setAppState={setAppState}
+                  setActiveRoomId={setActiveRoomId}/>
+        <ButtonPanel setAppState={setAppState}/>
+      </div>
+    </div>
   )
 }
 
