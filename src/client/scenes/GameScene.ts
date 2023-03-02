@@ -225,6 +225,7 @@ export class GameScene extends Phaser.Scene {
     {font: '"Press Start 2P"', fontSize: '72px'}).setOrigin(0.5);
     this.time.addEvent({ delay: 2000, callback: () => {
       this.sys.game.destroy(true);
+      this.room.leave();
     }})
   }
 
