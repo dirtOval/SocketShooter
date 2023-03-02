@@ -42,7 +42,7 @@ export class GameScene extends Phaser.Scene {
 
     this.cursorKeys = this.input.keyboard.createCursorKeys()
 
-    console.log(this.sys.game.config)
+
 
   }
 
@@ -151,25 +151,16 @@ export class GameScene extends Phaser.Scene {
       this.physics.add.collider(entity, floor);
       this.physics.add.collider(entity, platforms);
 
-      for (let sessionId in this.playerBullets) {
-        this.physics.add.collider(entity, this.playerBullets[sessionId], (player, bullet) => {
-          if (sessionId === this.room.sessionId) {
-            console.log('own bullets');
-            return;
-          } else {
-            console.log('collided');
-            bullet.destroy();
-            player.setActive(false);
-            const explosion = this.physics.add.sprite(player.x, player.y, 'explosion');
-            explosion.setScale(2);
-            explosion.play('explosion');
-            explosion.on('animationcomplete', function() {
-              explosion.destroy();
-            })
-          }
+      // for (let sessionId in this.playerBullets) {
+      //   // if (sessionId === this.room.sessionId) {
+      //   //   continue;
+      //   // }
+      //   console.log('sessionid');
+      //   for (let bullet of this.playerBullets[sessionId]) {
 
-        })
-      }
+      //   }
+
+      // }
 
       //if the player entity is the client player
       if (sessionId === this.room.sessionId) {
@@ -230,6 +221,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // console.log(this.playerBullets);
+
     this.inputPayload.left = this.cursorKeys.left.isDown;
     this.inputPayload.right = this.cursorKeys.right.isDown;
 
@@ -263,7 +256,21 @@ export class GameScene extends Phaser.Scene {
         bullet.x = this.currentPlayer.x + 35;
         bullet.setVelocityX(BULLET_SPEED);
       }
-      this.playerBullets[this.room.sessionId].push()
+      this.playerBullets[this.room.sessionId].push(bullet)
+      for (let player in this.playerEntities) {
+        this.physics.add.collider(this.playerEntities[player], bullet, (player, bullet) => {
+          console.log('collided');
+          bullet.destroy();
+          player.setActive(false);
+          const explosion = this.physics.add.sprite(player.x, player.y, 'explosion');
+          explosion.setScale(2);
+          explosion.play('explosion');
+          explosion.on('animationcomplete', function() {
+            explosion.destroy();
+          })
+      })
+      }
+
       this.inputPayload.fire = true;
       this.currentPlayer.canFire = false;
     }
@@ -379,6 +386,21 @@ export class GameScene extends Phaser.Scene {
         if (this.playerBullets[sessionId].length < bulletArray.length) {
           while (this.playerBullets[sessionId].length < bulletArray.length) {
             const bullet = new Bullet(this, entity.x, entity.y - 10);
+            this.playerBullets[sessionId].push(bullet);
+            for (let player in this.playerEntities) {
+              let collider = this.physics.add.collider(this.playerEntities[player], bullet, (entity, bullet) => {
+                console.log('collided');
+                bullet.destroy();
+                entity.setActive(false);
+                const explosion = this.physics.add.sprite(entity.x, entity.y, 'explosion');
+                explosion.setScale(2);
+                explosion.play('explosion');
+                explosion.on('animationcomplete', function() {
+                  explosion.destroy();
+                })
+            })
+            }
+
             if (serverFacing === 'left') {
               bullet.x = entity.x - 35;
               bullet.setVelocityX(-BULLET_SPEED);
@@ -386,7 +408,6 @@ export class GameScene extends Phaser.Scene {
               bullet.x = entity.x + 35;
               bullet.setVelocityX(BULLET_SPEED);
             }
-            this.playerBullets[sessionId].push(bullet)
           }
         }
 

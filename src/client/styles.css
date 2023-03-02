@@ -21,7 +21,7 @@ canvas {
 h1 {
   font-size: 72px;
   text-align: center;
-  line-height: 0;
+  line-height: 50px;
 }
 
 p {
@@ -35,6 +35,7 @@ p {
 }
 
 .menu {
+  margin-top: 70px;
   display: flex;
   justify-content: space-around;
   /* border: 1px solid greenyellow; */
