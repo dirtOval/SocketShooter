@@ -37,7 +37,8 @@ const App = (props) => {
                                       setAppState={setAppState}
                                       setActiveRoomId={setActiveRoomId}/>}
 
-    {appState === 'playing' && <GameView activeRoomId={activeRoomId}/>}
+    {appState === 'playing' && <GameView activeRoomId={activeRoomId}
+                                         setAppState={setAppState}/>}
     </div>
   )
 }
