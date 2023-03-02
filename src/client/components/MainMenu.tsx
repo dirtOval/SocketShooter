@@ -10,7 +10,7 @@ const MainMenu = ({rooms, setAppState, setActiveRoomId}) => {
       <MatchList rooms={rooms}
                  setAppState={setAppState}
                  setActiveRoomId={setActiveRoomId}/>
-      <ButtonPanel />
+      <ButtonPanel setAppState={setAppState}/>
     </>
   )
 }

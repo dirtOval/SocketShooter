@@ -11,6 +11,13 @@ const App = (props) => {
   const [activeRoomId, setActiveRoomId] = useState('');
 
   useEffect( () => {
+    client.getAvailableRooms()
+      .then(rooms => {
+        setRooms(rooms);
+      })
+      .catch(err => {
+        console.log(err);
+      })
     setInterval(() => {
       client.getAvailableRooms()
       .then(rooms => {
@@ -22,11 +29,13 @@ const App = (props) => {
     }, 3000)
   }, [])
 
+
   return (
     <>
     {appState === 'menu' && <MainMenu rooms={rooms}
                                       setAppState={setAppState}
                                       setActiveRoomId={setActiveRoomId}/>}
+
     {appState === 'playing' && <GameView activeRoomId={activeRoomId}/>}
     </>
   )

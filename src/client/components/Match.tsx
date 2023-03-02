@@ -1,9 +1,9 @@
 import React from 'react';
 
 const Match = ({room, handleClick}) => {
-  console.log(room);
+  console.log(room.roomId);
   return (
-    <div class="match" onClick={() => {
+    <div className="match" onClick={() => {
       handleClick(room.roomId);
     }}>
       <h2>Deathmatch</h2>

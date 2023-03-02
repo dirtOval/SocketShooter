@@ -8,7 +8,7 @@ const MatchList = ({rooms, setAppState, setActiveRoomId}) => {
     setAppState('playing');
   }
   return (
-    <div class="match-list">
+    <div className="match-list">
       {rooms.map(room => (
         <Match room={room} key={room.processId} handleClick={handleClick}/>
       ))}

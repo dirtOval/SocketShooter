@@ -42,7 +42,7 @@ export class GameScene extends Phaser.Scene {
 
     this.cursorKeys = this.input.keyboard.createCursorKeys()
 
-    console.log(this.sys.game)
+    console.log(this.sys.game.config)
 
   }
 
@@ -125,11 +125,20 @@ export class GameScene extends Phaser.Scene {
       frameRate: 20
     })
 
-    try {
-      this.room = await client.joinById(this.sys.game.config.gameTitle);
-      console.log('Joined successfully! :)')
-    } catch (err) {
-      console.log(err);
+    if (this.sys.game.config.gameTitle) {
+      try {
+        this.room = await client.joinById(this.sys.game.config.gameTitle);
+        console.log('Joined successfully! :)')
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      try {
+        this.room = await client.create('gameroom');
+        console.log('game room created!');
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     this.room.state.players.onAdd = (player, sessionId) => {
