@@ -1,0 +1,35 @@
+{
+  "name": "socketshooter",
+  "version": "1.0.0",
+  "description": "a simple 2D competitive multiplayer shooter made with free art",
+  "scripts": {
+    "build": "parcel build src/client/index.html --dist-dir dist",
+    "server": "ts-node src/server/main.ts",
+    "server-dev": "ts-node-dev --watch \"src/**/*\" --respawn --transpile-only src/server/main.ts",
+    "server-prod": "node dist/server/main.js",
+    "client": "parcel serve src/client/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dirtOval/SocketShooter.git"
+  },
+  "author": "deirdre loyall",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dirtOval/SocketShooter/issues"
+  },
+  "homepage": "https://github.com/dirtOval/SocketShooter#readme",
+  "dependencies": {
+    "colyseus": "^0.14.24",
+    "colyseus.js": "^0.14.13",
+    "express": "^4.18.2",
+    "phaser": "^3.55.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.8.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.5"
+  }
+}
