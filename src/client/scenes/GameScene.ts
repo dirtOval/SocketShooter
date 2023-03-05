@@ -3,6 +3,7 @@ import { Room } from 'colyseus.js';
 import Player from '../entities/Player';
 import Bullet from '../entities/Bullet';
 import {client} from '../utility/Client';
+import ScoreLabel from '../ui/ScoreLabel';
 
 const backgroundImage = require('../../assets/background.png');
 const floorImage = require('../../assets/floor.png');
@@ -60,6 +61,8 @@ export class GameScene extends Phaser.Scene {
     const floor = this.physics.add.staticSprite(0, 909, 'floor').setOrigin(0).refreshBody();
 
     const platforms = this.physics.add.staticGroup();
+
+    this.scoreLabel = this.createScoreLabel(this.cameras.main.x + 16, this.cameras.main.y + 16, 0)
 
     // platforms.create(370, 634, 'platform');
     // platforms.create(1174, 634, 'platform');
@@ -215,14 +218,25 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  createScoreLabel(x, y, score)
+	{
+		const style = { fontSize: '32px', fill: '#FFF' }
+		const label = new ScoreLabel(this, x, y, score, style).setScrollFactor(0);
+
+		this.add.existing(label)
+
+		return label
+	}
+
   die() {
     this.playerEntities[this.room.sessionId].canFire = false;
     this.playerEntities[this.room.sessionId].dying = true;
 
     const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
     const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-    this.add.text(screenCenterX, screenCenterY, 'You are Dead',
-    {font: '"Press Start 2P"', fontSize: '72px'}).setOrigin(0.5);
+    const style = {fontSize: '72px'};
+    this.add.text(screenCenterX, screenCenterY, 'You are Dead', style).setOrigin(0.5);
+
     this.time.addEvent({ delay: 2000, callback: () => {
       this.sys.game.destroy(true);
       this.room.leave();
@@ -269,24 +283,28 @@ export class GameScene extends Phaser.Scene {
     if (xKey.isDown && this.currentPlayer.canFire) {
       const bullet = new Bullet(this, this.currentPlayer.x, this.currentPlayer.y - 10);
       if (this.currentPlayer.facing === 'left') {
-        bullet.x = this.currentPlayer.x - 35;
+        bullet.x = this.currentPlayer.x - 40;
         bullet.setVelocityX(-BULLET_SPEED);
       } else {
-        bullet.x = this.currentPlayer.x + 35;
+        bullet.x = this.currentPlayer.x + 40;
         bullet.setVelocityX(BULLET_SPEED);
       }
       this.playerBullets[this.room.sessionId].push(bullet)
       for (let player in this.playerEntities) {
-        this.physics.add.collider(this.playerEntities[player], bullet, (player, bullet) => {
+        if (player === this.room.sessionId) {
+          continue;
+        }
+        this.physics.add.collider(this.playerEntities[player], bullet, (entity, bullet) => {
           console.log('collided');
           bullet.destroy();
-          player.setActive(false).setVisible(false);
-          const explosion = this.physics.add.sprite(player.x, player.y, 'explosion');
+          entity.setActive(false).setVisible(false);
+          const explosion = this.physics.add.sprite(entity.x, entity.y, 'explosion');
           explosion.setScale(2);
           explosion.play('explosion');
           explosion.on('animationcomplete', function() {
             explosion.destroy();
           })
+          this.scoreLabel.add(100);
       })
       }
 

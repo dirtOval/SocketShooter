@@ -2,7 +2,6 @@
   "name": "socketshooter",
   "version": "1.0.0",
   "description": "a simple 2D competitive multiplayer shooter made with free art",
-  "main": "dist/index.html",
   "scripts": {
     "build": "parcel build src/client/index.html --dist-dir dist",
     "server": "ts-node src/server/main.ts",
