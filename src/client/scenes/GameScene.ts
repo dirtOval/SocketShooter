@@ -234,8 +234,9 @@ export class GameScene extends Phaser.Scene {
 
     const screenCenterX = this.cameras.main.worldView.x + this.cameras.main.width / 2;
     const screenCenterY = this.cameras.main.worldView.y + this.cameras.main.height / 2;
-    this.add.text(screenCenterX, screenCenterY, 'You are Dead',
-    {font: '"Press Start 2P"', fontSize: '72px'}).setOrigin(0.5);
+    const style = {fontSize: '72px'};
+    this.add.text(screenCenterX, screenCenterY, 'You are Dead', style).setOrigin(0.5);
+
     this.time.addEvent({ delay: 2000, callback: () => {
       this.sys.game.destroy(true);
       this.room.leave();
@@ -297,12 +298,13 @@ export class GameScene extends Phaser.Scene {
           console.log('collided');
           bullet.destroy();
           entity.setActive(false).setVisible(false);
-          const explosion = this.physics.add.sprite(player.x, player.y, 'explosion');
+          const explosion = this.physics.add.sprite(entity.x, entity.y, 'explosion');
           explosion.setScale(2);
           explosion.play('explosion');
           explosion.on('animationcomplete', function() {
             explosion.destroy();
           })
+          this.scoreLabel.add(100);
       })
       }
 
