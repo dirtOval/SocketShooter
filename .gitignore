@@ -9,3 +9,6 @@ dist
 
 #parcel
 .parcel-cache
+
+#key
+socket.pem
